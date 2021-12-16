@@ -1,3 +1,5 @@
+// NOTE Don't perform a side effect inside of your reducer
+// And never run any asynchronous code inside the reducer in general
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = { items: [], totalQuantity: 0 };
