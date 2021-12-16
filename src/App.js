@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { uiActions } from "./store/ui-slice";
-
-import { FIREBASE_CART } from "./config";
+import { sendCartData, fetchCartData } from "./store/cart-actions";
 
 import Notification from "./components/UI/Notification";
 import Cart from "./components/Cart/Cart";
@@ -17,45 +15,23 @@ function App() {
   const cart = useSelector((state) => state.cart);
   const notification = useSelector((state) => state.ui.notification);
 
+  useEffect(() => {
+    dispatch(fetchCartData());
+  }, [dispatch]);
+
   // once update state and update the DB as well
   useEffect(() => {
-    const sendCartData = async () => {
-      dispatch(
-        uiActions.showNotification({
-          status: "pending",
-          title: "Sending...",
-          message: "Sending cart Data!",
-        })
-      );
-
-      const response = await fetch(FIREBASE_CART, {
-        method: "PUT", //overwrite the existing one
-        body: JSON.stringify(cart),
-      });
-
-      if (!response.ok) throw new Error("Sending cart data failed.");
-
-      dispatch(
-        uiActions.showNotification({
-          status: "success",
-          title: "Success!",
-          message: "Sending cart data successfully!",
-        })
-      );
-    };
-
-    // guard first time
-    if (isInitial) return (isInitial = false);
-
-    sendCartData().catch((err) => {
-      dispatch(
-        uiActions.showNotification({
-          status: "error",
-          title: "Error!",
-          message: err.message,
-        })
-      );
-    });
+    if (isInitial) {
+      isInitial = false;
+      return;
+    }
+    // thunk
+    // a function that delays an action until later
+    // an action creator function that does not return the
+    // action itself but another function which eventually returns the action
+    if (cart.changed) {
+      dispatch(sendCartData(cart));
+    }
   }, [cart, dispatch]);
 
   return (
